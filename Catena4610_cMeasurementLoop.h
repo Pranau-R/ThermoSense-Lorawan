@@ -58,6 +58,20 @@ public:
     // buffer size for uplink data
     static constexpr size_t kTxBufferSize = 18;
 
+    // message format
+    static constexpr uint8_t kMessageFormat = 0x30;
+
+    enum class Flags : uint8_t
+            {
+            Vbat = 1 << 0,      // vBat
+            Vcc = 1 << 1,       // vBus
+            Boot = 1 << 2,      // boot count
+            TPH = 1 << 3,       // temperature, pressure, humidity
+            Lux = 1 << 4,       // Light
+            Temp1 = 1 << 5,     // temperature (probe one)
+            Temp2 = 1 << 6,     // temperature (probe two)
+            };
+
     // the structure of a measurement
     struct Measurement
         {
@@ -86,7 +100,8 @@ public:
         struct CompostTemp
             {
             // compost temperature (in degrees C)
-            float                 TempC;
+            float                   TempOneC;
+            float                   TempTwoC;
             };
 
         //---------------------------
@@ -94,7 +109,7 @@ public:
         //---------------------------
 
         // flags of entries that are valid.
-        McciCatena::FlagsSensor3	flags;
+        Flags                   	flags;
         // measured battery voltage, in volts
         float                       Vbat;
         // measured system Vdd voltage, in volts
@@ -118,10 +133,11 @@ public:
 	// some parameters
 	using MeasurementFormat = McciCatena4610::cMeasurementFormat;
 	using Measurement = MeasurementFormat::Measurement;
-	using Flags = McciCatena::FlagsSensor3;
-	static constexpr std::uint8_t kMessageFormat = McciCatena::FormatSensor3;
+    using Flags = MeasurementFormat::Flags;
+    static constexpr std::uint8_t kMessageFormat = MeasurementFormat::kMessageFormat;
 
-	bool checkCompostSensorPresent(void);
+	bool checkCompostSensorOnePresent(void);
+	bool checkCompostSensorTwoPresent(void);
 
     enum OPERATING_FLAGS : uint32_t
         {

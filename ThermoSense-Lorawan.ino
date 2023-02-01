@@ -38,7 +38,8 @@ static_assert(
 
 static const char sVersion[] = "1.0.0";
 
-#define PIN_ONE_WIRE    A2
+#define PIN_A2_ONE_WIRE     A2
+#define PIN_D12_ONE_WIRE    D12
 
 /****************************************************************************\
 |
@@ -61,8 +62,10 @@ SPIClass gSPI2(
 /* instantiate the flash */
 Catena_Mx25v8035f gFlash;
 
-OneWire oneWire(PIN_ONE_WIRE);
-DallasTemperature sensor_CompostTemp(&oneWire);
+OneWire oneWireOne(PIN_A2_ONE_WIRE);
+OneWire oneWireTwo(PIN_D12_ONE_WIRE);
+DallasTemperature sensor_CompostTempOne(&oneWireOne);
+DallasTemperature sensor_CompostTempTwo(&oneWireTwo);
 bool fHasCompostTemp;
 
 /****************************************************************************\

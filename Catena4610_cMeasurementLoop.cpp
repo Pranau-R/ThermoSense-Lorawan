@@ -24,8 +24,10 @@ Author:
 using namespace McciCatena4610;
 using namespace McciCatena;
 
-extern OneWire oneWire;
-extern DallasTemperature sensor_CompostTemp;
+extern OneWire oneWireOne;
+extern OneWire oneWireTwo;
+extern DallasTemperature sensor_CompostTempOne;
+extern DallasTemperature sensor_CompostTempTwo;
 extern cMeasurementLoop gMeasurementLoop;
 
 /****************************************************************************\
@@ -78,15 +80,26 @@ void cMeasurementLoop::begin()
         gCatena.SafePrintf("No Si1133 found: check hardware\n");
         }
 
-    bool fCompostTemp = this->checkCompostSensorPresent();
+    bool fCompostTempOne = this->checkCompostSensorOnePresent();
 
-    if(!fCompostTemp)
+    if(!fCompostTempOne)
         {
-        gCatena.SafePrintf("No one-wire temperature sensor detected\n");
+        gCatena.SafePrintf("No one-wire temperature sensor one detected\n");
         }
     else
         {
-        gCatena.SafePrintf("One-wire temperature sensor detected\n");
+        gCatena.SafePrintf("One-wire temperature sensor one detected\n");
+        }
+
+    bool fCompostTempTwo = this->checkCompostSensorTwoPresent();
+
+    if(!fCompostTempTwo)
+        {
+        gCatena.SafePrintf("No one-wire temperature sensor two detected\n");
+        }
+    else
+        {
+        gCatena.SafePrintf("One-wire temperature sensor two detected\n");
         }
 
     // start (or restart) the FSM.
@@ -97,17 +110,28 @@ void cMeasurementLoop::begin()
         }
     }
 
-// return true if the compost sensor is attached.
-bool cMeasurementLoop::checkCompostSensorPresent(void)
+// return true if the compost sensor one is attached.
+bool cMeasurementLoop::checkCompostSensorOnePresent(void)
     {
     /* set D11 high so V_OUT2 is going to be high for onewire sensor */
     pinMode(D11, OUTPUT);
     digitalWrite(D11, HIGH);
-
     delay(10);
 
-    sensor_CompostTemp.begin();
-    return sensor_CompostTemp.getDeviceCount() != 0;
+    sensor_CompostTempOne.begin();
+    return sensor_CompostTempOne.getDeviceCount() != 0;
+    }
+
+// return true if the compost sensor two is attached.
+bool cMeasurementLoop::checkCompostSensorTwoPresent(void)
+    {
+    /* set D10 high so V_OUT1 is going to be high for onewire sensor */
+    pinMode(D10, OUTPUT);
+    digitalWrite(D10, HIGH);
+    delay(10);
+
+    sensor_CompostTempTwo.begin();
+    return sensor_CompostTempTwo.getDeviceCount() != 0;
     }
 
 void cMeasurementLoop::end()
@@ -273,14 +297,14 @@ void cMeasurementLoop::resetMeasurements()
 void cMeasurementLoop::updateSynchronousMeasurements()
     {
     this->m_data.Vbat = gCatena.ReadVbat();
-    this->m_data.flags |= Flags::FlagVbat;
+    this->m_data.flags |= Flags::Vbat;
 
     this->m_data.Vbus = gCatena.ReadVbus();
-    this->m_data.flags |= Flags::FlagVcc;
+    this->m_data.flags |= Flags::Vcc;
 
     if (gCatena.getBootCount(this->m_data.BootCount))
         {
-        this->m_data.flags |= Flags::FlagBoot;
+        this->m_data.flags |= Flags::Boot;
         }
 
     if (this->m_fBme280)
@@ -289,7 +313,7 @@ void cMeasurementLoop::updateSynchronousMeasurements()
         this->m_data.env.Temperature = m.Temperature;
         this->m_data.env.Pressure = m.Pressure;
         this->m_data.env.Humidity = m.Humidity;
-        this->m_data.flags |= Flags::FlagTPH;
+        this->m_data.flags |= Flags::TPH;
         }
 
     // SI1133 is handled separately
@@ -309,26 +333,45 @@ void cMeasurementLoop::updateSynchronousMeasurements()
         delay(90);
         }
 
-    bool fCompostTemp = checkCompostSensorPresent();
+    bool fCompostTempOne = checkCompostSensorOnePresent();
 
-    if (fCompostTemp)
+    if (fCompostTempOne)
         {
-        sensor_CompostTemp.requestTemperatures();
-        float compostTempC = sensor_CompostTemp.getTempCByIndex(0);
-        this->m_data.compost.TempC = compostTempC;
-        this->m_data.flags |= Flags::FlagWater;
+        sensor_CompostTempOne.requestTemperatures();
+        float compostTempOne = sensor_CompostTempOne.getTempCByIndex(0);
+        this->m_data.compost.TempOneC = compostTempOne;
+        this->m_data.flags |= Flags::Temp1;
         }
     else if (fHasCompostTemp)
         {
-        gCatena.SafePrintf("No compost temperature\n");
+        gCatena.SafePrintf("Not a compost temperature module\n");
         }
-    else if(!fCompostTemp)
+    else if(!fCompostTempOne)
         {
-        gCatena.SafePrintf("Compost sensor not detected\n");
+        gCatena.SafePrintf("Compost sensor one not detected\n");
         }
 
-    /* set D11 low to turn off after measuring */
+    bool fCompostTempTwo = checkCompostSensorTwoPresent();
+
+    if (fCompostTempTwo)
+        {
+        sensor_CompostTempTwo.requestTemperatures();
+        float compostTempTwo = sensor_CompostTempTwo.getTempCByIndex(0);
+        this->m_data.compost.TempTwoC = compostTempTwo;
+        this->m_data.flags |= Flags::Temp2;
+        }
+    else if (fHasCompostTemp)
+        {
+        gCatena.SafePrintf("Not a compost temperature module\n");
+        }
+    else if(!fCompostTempTwo)
+        {
+        gCatena.SafePrintf("Compost sensor two not detected\n");
+        }
+
+    /* set D11 and D10 low to turn off after measuring */
     pinMode(D11, INPUT);
+    pinMode(D10, INPUT);
     pinMode(D14, INPUT);
     }
 
@@ -340,7 +383,9 @@ void cMeasurementLoop::updateLightMeasurements()
     this->m_si1133.stop();
 
     this->m_data.light.White = (float) data[0];
+    this->m_data.flags |= Flags::Lux;
     }
+
 /****************************************************************************\
 |
 |   Start uplink of data
@@ -604,12 +649,18 @@ void cMeasurementLoop::deepSleepPrepare(void)
         this->m_fSpi2Active = false;
         }
     pinMode(D11, INPUT);
+    pinMode(D10, INPUT);
     }
 
 void cMeasurementLoop::deepSleepRecovery(void)
     {
     pinMode(D11, OUTPUT);
     digitalWrite(D11, HIGH);
+    delay(10);
+
+    pinMode(D10, OUTPUT);
+    digitalWrite(D10, HIGH);
+    delay(10);
 
     Serial.begin();
     Wire.begin();

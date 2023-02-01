@@ -58,7 +58,7 @@ cMeasurementLoop::fillTxBuffer(
     b.put(std::uint8_t(this->m_data.flags));
 
     // send Vbat
-    if ((this->m_data.flags &  Flags::FlagVbat) !=  Flags(0))
+    if ((this->m_data.flags &  Flags::Vbat) !=  Flags(0))
         {
         float Vbat = mData.Vbat;
         gCatena.SafePrintf("Vbat:    %d mV\n", (int) (Vbat * 1000.0f));
@@ -68,7 +68,7 @@ cMeasurementLoop::fillTxBuffer(
     // send Vdd if we can measure it.
 
     // Vbus is sent as 5000 * v
-    if ((this->m_data.flags &  Flags::FlagVcc) !=  Flags(0))
+    if ((this->m_data.flags &  Flags::Vcc) !=  Flags(0))
         {
         float Vbus = mData.Vbus;
         gCatena.SafePrintf("Vbus:    %d mV\n", (int) (Vbus * 1000.0f));
@@ -76,12 +76,12 @@ cMeasurementLoop::fillTxBuffer(
         }
 
     // send boot count
-    if ((this->m_data.flags &  Flags::FlagBoot) !=  Flags(0))
+    if ((this->m_data.flags &  Flags::Boot) !=  Flags(0))
         {
         b.putBootCountLsb(mData.BootCount);
         }
 
-    if ((this->m_data.flags &  Flags::FlagTPH) !=  Flags(0))
+    if ((this->m_data.flags &  Flags::TPH) !=  Flags(0))
         {
         gCatena.SafePrintf(
                 "BME280:  T: %d P: %d RH: %d\n",
@@ -95,7 +95,7 @@ cMeasurementLoop::fillTxBuffer(
         }
 
     // put light
-    if ((this->m_data.flags & Flags::FlagLux) != Flags(0))
+    if ((this->m_data.flags & Flags::Lux) != Flags(0))
         {
         gCatena.SafePrintf(
                 "Si1133:  %d White\n",
@@ -103,14 +103,24 @@ cMeasurementLoop::fillTxBuffer(
                 );
         }
 
-    // send compost data
-    if ((this->m_data.flags & Flags::FlagWater) !=  Flags(0))
+    // send compost one data
+    if ((this->m_data.flags & Flags::Temp1) !=  Flags(0))
         {
         gCatena.SafePrintf(
                 "Compost:  T: %d C\n",
-                (int) mData.compost.TempC
+                (int) mData.compost.TempOneC
                 );
-        b.putT(mData.compost.TempC);
+        b.putT(mData.compost.TempOneC);
+        }
+
+    // send compost two data
+    if ((this->m_data.flags & Flags::Temp2) !=  Flags(0))
+        {
+        gCatena.SafePrintf(
+                "Compost:  T: %d C\n",
+                (int) mData.compost.TempTwoC
+                );
+        b.putT(mData.compost.TempTwoC);
         }
 
     gLed.Set(McciCatena::LedPattern::Off);

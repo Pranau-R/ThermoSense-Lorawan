@@ -1,7 +1,7 @@
 /*
 Name:   WeRadiate-decoder-ttn.js
 Function:
-    This function decodes the record (port 1, format 0x15) sent by the
+    This function decodes the record (port 1, format 0x30) sent by the
     MCCI Catena 4612 soil/water application for WeRadiate TTN console.
 Copyright and License:
     See accompanying LICENSE file at https://github.com/mcci-catena/MCCI-Catena-PMS7003/
@@ -38,7 +38,7 @@ function Decoder(bytes, port) {
 
     if (port === 1) {
         cmd = bytes[0];
-        if (cmd == 0x15) {
+        if (cmd == 0x30) {
             // decode Catena 4612 M102 data
 
             // test vectors:
@@ -155,6 +155,15 @@ function Decoder(bytes, port) {
             }
 
             if (flags & 0x40) {
+                // onewire temperature
+                var tempRaw = (bytes[i] << 8) + bytes[i + 1];
+                i += 2;
+                if (tempRaw & 0x8000)
+                    tempRaw = -0x10000 + tempRaw;
+                decoded.tWater = tempRaw / 256;
+            }
+
+            if (flags & 0x100) {
                 // temperature followed by RH
                 var tempRaw = (bytes[i] << 8) + bytes[i + 1];
                 i += 2;

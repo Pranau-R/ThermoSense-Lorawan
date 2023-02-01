@@ -38,8 +38,10 @@ extern  SPIClass                                gSPI2;
 extern  McciCatena4610::cMeasurementLoop        gMeasurementLoop;
 
 //   The Temp Probe
-extern  OneWire                                 oneWire;
-extern  DallasTemperature                       sensor_CompostTemp;
+extern  OneWire                                 oneWireOne;
+extern  OneWire                                 oneWireTwo;
+extern  DallasTemperature                       sensor_CompostTempOne;
+extern  DallasTemperature                       sensor_CompostTempTwo;
 extern bool                                     fHasCompostTemp;
 
 //   The flash

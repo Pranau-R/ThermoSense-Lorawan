@@ -30,7 +30,7 @@ function Decoder(bytes, port) {
 
     if (port === 1) {
         cmd = bytes[0];
-        if (cmd == 0x15) {
+        if (cmd == 0x30) {
             // decode Catena 4612 M102 data
 
             // test vectors:
@@ -147,6 +147,15 @@ function Decoder(bytes, port) {
             }
 
             if (flags & 0x40) {
+                // onewire temperature
+                var tempRaw = (bytes[i] << 8) + bytes[i + 1];
+                i += 2;
+                if (tempRaw & 0x8000)
+                    tempRaw = -0x10000 + tempRaw;
+                decoded.tWater = tempRaw / 256;
+            }
+
+            if (flags & 0x100) {
                 // temperature followed by RH
                 var tempRaw = (bytes[i] << 8) + bytes[i + 1];
                 i += 2;
@@ -181,7 +190,7 @@ if ("payload_raw" in msg) {
 var result = Decoder(bytes, msg.port);
 
 if (result === null) {
-    node.error("not port 1/fmt 0x15! port=" + msg.port.toString());
+    node.error("not port 1/fmt 0x30! port=" + msg.port.toString());
 }
 
 // now update msg with the new payload and new .local field
