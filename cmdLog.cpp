@@ -19,7 +19,7 @@ Author:
 
 */
 
-#include "Catena4610_cmd.h"
+#include "Model4928_cmd.h"
 
 #include <Catena_Log.h>
 

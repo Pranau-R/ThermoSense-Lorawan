@@ -21,12 +21,13 @@ Author:
 #include "ThermoSense-Lorawan.h"
 #include <OneWire.h>
 #include <DallasTemperature.h>
-#include "Catena4610_cMeasurementLoop.h"
-#include "Catena4610_cmd.h"
+#include "Model4928_cMeasurementLoop.h"
+#include "Model4928_cmd.h"
 
 extern McciCatena::Catena gCatena;
-using namespace McciCatena4610;
+using namespace McciModel4928;
 using namespace McciCatena;
+using namespace McciCatenaSht3x;
 
 static_assert(
     CATENA_ARDUINO_PLATFORM_VERSION_COMPARE_GE(
@@ -50,7 +51,15 @@ Catena gCatena;
 cTimer ledTimer;
 Catena::LoRaWAN gLoRaWAN;
 StatusLed gLed (Catena::PIN_STATUS_LED);
-cMeasurementLoop gMeasurementLoop;
+
+// the Temperature/Humidity Sensor
+cSHT3x gSht { Wire };
+
+// the light Sensor
+Ltr_329als gLtr {Wire};
+
+// the measurement loop instance
+cMeasurementLoop gMeasurementLoop { gSht, gLtr };
 
 /* instantiate SPI */
 SPIClass gSPI2(

@@ -25,7 +25,7 @@ Author:
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include <SPI.h>
-#include "Catena4610_cMeasurementLoop.h"
+#include "Model4928_cMeasurementLoop.h"
 
 // the global clock object
 
@@ -35,7 +35,7 @@ extern  McciCatena::Catena::LoRaWAN             gLoRaWAN;
 extern  McciCatena::StatusLed                   gLed;
 
 extern  SPIClass                                gSPI2;
-extern  McciCatena4610::cMeasurementLoop        gMeasurementLoop;
+extern  McciModel4928::cMeasurementLoop        gMeasurementLoop;
 
 //   The Temp Probe
 extern  OneWire                                 oneWireOne;
