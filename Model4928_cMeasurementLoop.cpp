@@ -9,14 +9,14 @@ Copyright:
     See accompanying LICENSE file for copyright and license information.
 
 Author:
-    Dhinesh Kumar Pitchai, MCCI Corporation   May 2022
+    Pranau R, MCCI Corporation   February 2023
 
 */
 
 #include "Model4928_cMeasurementLoop.h"
 
 #include <arduino_lmic.h>
-#include <ThermoSense-Lorawan.h>
+#include <Model4928-Temperature-Sensor.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
